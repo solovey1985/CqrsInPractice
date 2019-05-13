@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UI.Api;
 using UI.Common;
+using UI.MessageBroker;
 
 namespace UI.Students
 {
@@ -46,7 +47,7 @@ namespace UI.Students
         {
             var viewModel = new TransferViewModel(studentId);
             _dialogService.ShowDialog(viewModel);
-
+            
             Search();
         }
 
@@ -61,7 +62,10 @@ namespace UI.Students
         private void UnregisterStudent(StudentDto dto)
         {
             ApiClient.Unregister(dto.Id).ConfigureAwait(false).GetAwaiter().GetResult();
-
+            using(var mbClient = new MessageBrokerClient())
+            {
+                mbClient.Send($"Student was unregistered: {dto.Name}");
+            }
             Search();
         }
 
@@ -69,7 +73,10 @@ namespace UI.Students
         {
             var viewModel = new EditPersonalInfoViewModel(dto.Id, dto.Name, dto.Email);
             _dialogService.ShowDialog(viewModel);
-
+            using (var mbClient = new MessageBrokerClient())
+            {
+                mbClient.Send($"Student was edited: {dto.Name}");
+            }
             Search();
         }
 
@@ -77,7 +84,6 @@ namespace UI.Students
         {
             var viewModel = new RegisterStudentViewModel();
             _dialogService.ShowDialog(viewModel);
-
             Search();
         }
 
